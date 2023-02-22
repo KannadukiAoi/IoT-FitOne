@@ -1,0 +1,551 @@
+[
+    {
+        "id": "c45a3537ff5af6f3",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "18a4d902116f0d92",
+        "type": "tls-config",
+        "name": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "c99509d958a7d52b3ad4c414a4098d79e6000dac748a5abbb2d7411fbd2ff894-certificate.pem.crt",
+        "keyname": "c99509d958a7d52b3ad4c414a4098d79e6000dac748a5abbb2d7411fbd2ff894-private.pem.key",
+        "caname": "AmazonRootCA1 (1).pem",
+        "servername": "",
+        "verifyservercert": false,
+        "alpnprotocol": ""
+    },
+    {
+        "id": "a0cbd834526ee196",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "a39mjjo43mp9ee-ats.iot.ap-northeast-1.amazonaws.com",
+        "port": "8883",
+        "tls": "18a4d902116f0d92",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "55a5bb3e6137e454",
+        "type": "mqtt in",
+        "z": "c45a3537ff5af6f3",
+        "name": "",
+        "topic": "kaso/marswcmonitor_prod/gateway/+/data",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "a0cbd834526ee196",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1380,
+        "y": 160,
+        "wires": [
+            [
+                "052cdd0de04ee2a6"
+            ]
+        ]
+    },
+    {
+        "id": "4bc1385e9fb5079f",
+        "type": "function",
+        "z": "c45a3537ff5af6f3",
+        "name": "Refactor dist data",
+        "func": "const topicSegment = msg.topic.toString().split(\"/\");\nconst thingName = topicSegment[3];\nconst redirectTopic = `${topicSegment[0]}/${topicSegment[1]}/ruleEngine/${topicSegment[3]}/data`;\nconst date = new Date().toISOString();\n\nvar dataItem = msg.payload;\nvar sensorTypeId = \"\";\nsensorTypeId = dataItem.type;\n\ndataItem[\"thingName\"] = thingName;\ndataItem[\"date\"] = `${sensorTypeId}#${dataItem.mac}#${dataItem.time}`;\ndelete dataItem.time;\n\nmsg.topic = redirectTopic;\nmsg.payload = dataItem;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 270,
+        "y": 220,
+        "wires": [
+            [
+                "acecc166c2848930"
+            ]
+        ]
+    },
+    {
+        "id": "7d674a1148bbe2ea",
+        "type": "mqtt out",
+        "z": "c45a3537ff5af6f3",
+        "name": "Forward data to UI",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "a0cbd834526ee196",
+        "x": 1410,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "3ad554a5501dedde",
+        "type": "mqtt out",
+        "z": "c45a3537ff5af6f3",
+        "name": "Save sensor value",
+        "topic": "kaso/marswcmonitor_prod/ruleEngine/addEndpointValue",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "a0cbd834526ee196",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "59495dd2c7a52142",
+        "type": "link in",
+        "z": "c45a3537ff5af6f3",
+        "name": "Forward data to UI",
+        "links": [
+            "5c6ebdd2787dda56",
+            "84db8faf935e54d8",
+            "6d8ebd1e5e211fe4",
+            "741fdcbc7349215f"
+        ],
+        "x": 1245,
+        "y": 260,
+        "wires": [
+            [
+                "7d674a1148bbe2ea"
+            ]
+        ]
+    },
+    {
+        "id": "5c6ebdd2787dda56",
+        "type": "link out",
+        "z": "c45a3537ff5af6f3",
+        "name": "link out 1",
+        "mode": "link",
+        "links": [
+            "59495dd2c7a52142"
+        ],
+        "x": 705,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "acecc166c2848930",
+        "type": "switch",
+        "z": "c45a3537ff5af6f3",
+        "name": "Distance sensor switch",
+        "property": "payload.type",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "INGICS#iBS03R",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 520,
+        "y": 220,
+        "wires": [
+            [
+                "5c6ebdd2787dda56",
+                "c6c95ca063e8b3b4"
+            ]
+        ]
+    },
+    {
+        "id": "1a1922976ab1b659",
+        "type": "link in",
+        "z": "c45a3537ff5af6f3",
+        "name": "Save data to DB",
+        "links": [
+            "e57146060678f7e2",
+            "84db8faf935e54d8",
+            "6d8ebd1e5e211fe4",
+            "741fdcbc7349215f"
+        ],
+        "x": 1245,
+        "y": 340,
+        "wires": [
+            [
+                "3ad554a5501dedde"
+            ]
+        ]
+    },
+    {
+        "id": "052cdd0de04ee2a6",
+        "type": "link out",
+        "z": "c45a3537ff5af6f3",
+        "name": "Raw data from Gateway",
+        "mode": "link",
+        "links": [
+            "a30e508fdb19bcc2"
+        ],
+        "x": 1615,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "a30e508fdb19bcc2",
+        "type": "link in",
+        "z": "c45a3537ff5af6f3",
+        "name": "link in 1",
+        "links": [
+            "052cdd0de04ee2a6"
+        ],
+        "x": 105,
+        "y": 220,
+        "wires": [
+            [
+                "4bc1385e9fb5079f",
+                "5d66a86b24592a07"
+            ]
+        ]
+    },
+    {
+        "id": "d6d39444e485e9c8",
+        "type": "comment",
+        "z": "c45a3537ff5af6f3",
+        "name": "Regular data process",
+        "info": "",
+        "x": 220,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "538abcf3cd3f3353",
+        "type": "link in",
+        "z": "c45a3537ff5af6f3",
+        "name": "Presence detector",
+        "links": [
+            "c6c95ca063e8b3b4"
+        ],
+        "x": 85,
+        "y": 700,
+        "wires": [
+            [
+                "97a955f2b54fbdb0",
+                "f0319526b7ab622b"
+            ]
+        ]
+    },
+    {
+        "id": "8aac044fd802cddc",
+        "type": "comment",
+        "z": "c45a3537ff5af6f3",
+        "name": "Virtual sensor process",
+        "info": "",
+        "x": 220,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "c6c95ca063e8b3b4",
+        "type": "link out",
+        "z": "c45a3537ff5af6f3",
+        "name": "To virtual sensor",
+        "mode": "link",
+        "links": [
+            "538abcf3cd3f3353"
+        ],
+        "x": 705,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "5d66a86b24592a07",
+        "type": "debug",
+        "z": "c45a3537ff5af6f3",
+        "name": "debug 2",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 240,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "76457528a046911a",
+        "type": "inject",
+        "z": "c45a3537ff5af6f3",
+        "name": "Initial flow config",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 60,
+        "wires": [
+            [
+                "570230aa3864a046"
+            ]
+        ]
+    },
+    {
+        "id": "570230aa3864a046",
+        "type": "function",
+        "z": "c45a3537ff5af6f3",
+        "name": "Config initial",
+        "func": "const flowStatus = {\n    sensorDataHIstory:{}\n};\n\nflow.set(\"flowStatus\", flowStatus);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "97a955f2b54fbdb0",
+        "type": "switch",
+        "z": "c45a3537ff5af6f3",
+        "name": "A0:6C:65:E0:FA:41(presence detector)",
+        "property": "payload.mac",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "A0:6C:65:E0:FA:41",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "4b0fb1d65a554325",
+                "4168a9ebadf383d9"
+            ]
+        ]
+    },
+    {
+        "id": "f0319526b7ab622b",
+        "type": "switch",
+        "z": "c45a3537ff5af6f3",
+        "name": "A0:6C:65:E1:0D:E8(presence detector)",
+        "property": "payload.mac",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "A0:6C:65:E1:0D:E8",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 320,
+        "y": 740,
+        "wires": [
+            [
+                "2689210d785d0bac",
+                "192086a38a5e9003"
+            ]
+        ]
+    },
+    {
+        "id": "4168a9ebadf383d9",
+        "type": "debug",
+        "z": "c45a3537ff5af6f3",
+        "name": "debug 3",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "817c1c48f6264e28",
+        "type": "debug",
+        "z": "c45a3537ff5af6f3",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "4b0fb1d65a554325",
+        "type": "function",
+        "z": "c45a3537ff5af6f3",
+        "name": "cca76afd-f529-414e-934b-12db4e451002",
+        "func": "const textSensorId = \"cca76afd-f529-414e-934b-12db4e451002\";\n\nvar flowStatus = flow.get(\"flowStatus\");\nconst dateSegment = msg.payload.date.split(\"#\");\nconst verfyDataCount = 2;\n\nconst endpointId = `${dateSegment[0]}#${dateSegment[1]}#${dateSegment[2]}`;\n// node.warn(\"endpointId:\" + endpointId);\nif (!flowStatus.sensorDataHIstory[endpointId]) {\n    flowStatus.sensorDataHIstory[endpointId] = [];\n}\n\n\nflowStatus.sensorDataHIstory[endpointId].unshift(msg.payload.dist);\nnode.warn(flowStatus.sensorDataHIstory[endpointId]);\n\nif (flowStatus.sensorDataHIstory[endpointId].length < verfyDataCount) return;\n\nif (flowStatus.sensorDataHIstory[endpointId].length > verfyDataCount) {\n    flowStatus.sensorDataHIstory[endpointId].pop();\n}\n\n\n\nvar personExistCount = 0;\n\nfor (var data of flowStatus.sensorDataHIstory[endpointId]) {\n    if (data < 1000)\n        personExistCount++;\n}\n\nvar presenceText = \"\"\nif (personExistCount == verfyDataCount)\n    presenceText = \"<font color=\\\"#39B54A\\\">0</font><font color=\\\"#4D4D4D\\\">/1</font>\";\nelse\n    presenceText = \"<font color=\\\"#39B54A\\\">1</font><font color=\\\"#4D4D4D\\\">/1</font>\";\n\n\nflowStatus.sensorDataHIstory[endpointId] = []\nflow.set(\"flowStatus\", flowStatus);\n\nconst date = new Date().toISOString();\n\nmsg.payload = {\n    thingName: msg.payload[\"thingName\"],\n    date: `KASO#String#${textSensorId}#${date}`,\n    text: presenceText\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 640,
+        "wires": [
+            [
+                "0cbb4a0e5ccfac4d",
+                "6d8ebd1e5e211fe4"
+            ]
+        ]
+    },
+    {
+        "id": "2689210d785d0bac",
+        "type": "function",
+        "z": "c45a3537ff5af6f3",
+        "name": "5255a732-e892-49ad-bf42-779316f88914",
+        "func": "const textSensorId = \"5255a732-e892-49ad-bf42-779316f88914\";\n\nvar flowStatus = flow.get(\"flowStatus\");\nconst dateSegment = msg.payload.date.split(\"#\");\nconst verfyDataCount = 2;\nconst endpointId = `${dateSegment[0]}#${dateSegment[1]}#${dateSegment[2]}`;\nif (!flowStatus.sensorDataHIstory[endpointId]) {\n    flowStatus.sensorDataHIstory[endpointId] = [];\n}\n\nflowStatus.sensorDataHIstory[endpointId].unshift(msg.payload.dist);\n\nif (flowStatus.sensorDataHIstory[endpointId].length < verfyDataCount) return;\n\nif (flowStatus.sensorDataHIstory[endpointId].length > verfyDataCount) {\n    flowStatus.sensorDataHIstory[endpointId].pop();\n}\n\nvar personExistCount = 0;\n\nfor (var data of flowStatus.sensorDataHIstory[endpointId]) {\n    if (data < 1000)\n        personExistCount++;\n}\n\nvar presenceText = \"\"\nif (personExistCount == verfyDataCount)\n    presenceText = \"<font color=\\\"#39B54A\\\">0</font><font color=\\\"#4D4D4D\\\">/1</font>\";\nelse\n    presenceText = \"<font color=\\\"#39B54A\\\">1</font><font color=\\\"#4D4D4D\\\">/1</font>\";\n\nflowStatus.sensorDataHIstory[endpointId] = []\nflow.set(\"flowStatus\", flowStatus);\nconst date = new Date().toISOString();\n\nmsg.payload = {\n    thingName: msg.payload[\"thingName\"],\n    date: `KASO#String#${textSensorId}#${date}`,\n    text: presenceText\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 740,
+        "wires": [
+            [
+                "817c1c48f6264e28",
+                "741fdcbc7349215f"
+            ]
+        ]
+    },
+    {
+        "id": "0cbb4a0e5ccfac4d",
+        "type": "debug",
+        "z": "c45a3537ff5af6f3",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "192086a38a5e9003",
+        "type": "debug",
+        "z": "c45a3537ff5af6f3",
+        "name": "debug 6",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "6d8ebd1e5e211fe4",
+        "type": "link out",
+        "z": "c45a3537ff5af6f3",
+        "name": "link out 3",
+        "mode": "link",
+        "links": [
+            "1a1922976ab1b659",
+            "59495dd2c7a52142"
+        ],
+        "x": 1035,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "741fdcbc7349215f",
+        "type": "link out",
+        "z": "c45a3537ff5af6f3",
+        "name": "link out 4",
+        "mode": "link",
+        "links": [
+            "1a1922976ab1b659",
+            "59495dd2c7a52142"
+        ],
+        "x": 1035,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "a26b9a9cbf702107",
+        "type": "comment",
+        "z": "c45a3537ff5af6f3",
+        "name": "女子トイレ",
+        "info": "",
+        "x": 240,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "7b64cd3b4a8e9462",
+        "type": "comment",
+        "z": "c45a3537ff5af6f3",
+        "name": "男子トイレ",
+        "info": "",
+        "x": 240,
+        "y": 700,
+        "wires": []
+    }
+]
